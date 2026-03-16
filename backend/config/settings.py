@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'apps.categories',
     'apps.transactions',
     'apps.documents',
+    'apps.goals',
 ]
 
 MIDDLEWARE = [

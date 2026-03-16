@@ -8,7 +8,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Category
-        fields = ('id', 'name', 'icon', 'color', 'type', 'is_default', 'transaction_count', 'total_amount')
+        fields = ('id', 'name', 'icon', 'color', 'type', 'is_default', 'budget_limit', 'transaction_count', 'total_amount')
         read_only_fields = ('id', 'is_default')
 
     def get_transaction_count(self, obj):

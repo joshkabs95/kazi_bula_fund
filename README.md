@@ -1,111 +1,64 @@
-# 💰 Budget Manager — Django + React
+# 💰 Budget Master
 
-Application fullstack de gestion de budget personnel avec import de relevés bancaires PDF/CSV.
+Application fullstack de gestion des finances personnelles.
 
 ## Stack
-
-- **Backend** : Django 4.2 + DRF + JWT (simplejwt)
+- **Backend** : Django 4.2 + DRF + JWT + SQLite (dev) / PostgreSQL (prod)
 - **Frontend** : React 18 + Vite + Recharts
-- **Parsing** : pdfplumber (PDF) + pandas (CSV)
-- **Auth** : JWT (access 60min, refresh 7j)
+- **VPS** : 72.62.21.162 (srv1404625.hstgr.cloud)
 
----
+## Pages
+| Page | URL | Description |
+|------|-----|-------------|
+| Tableau de bord | `/` | KPIs + graphiques + insights |
+| Budget | `/budget` | Limites par catégorie + alertes 80/100% |
+| Analyses | `/analytics` | Donut + barres + tendances + Top 5 |
+| Objectifs | `/goals` | Épargne avec prévision automatique |
+| Login | `/login` | Authentification JWT |
+| Register | `/register` | Création de compte |
 
-## 🚀 Installation rapide
+## Installation locale
 
-### 1. Backend
-
+### Backend
 ```bash
-cd budget-app/backend
-python -m venv venv
-source venv/bin/activate          # Windows: venv\Scripts\activate
+cd backend
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
-
-# Migrations
+cp .env.example .env
 python manage.py migrate
-
-# Seed (catégories par défaut + données demo)
-python manage.py seed
-
-# Lancer le serveur
+python manage.py seed          # 6 mois de données demo
 python manage.py runserver
 ```
 
-Le backend tourne sur **http://127.0.0.1:8000**
-
-### 2. Frontend
-
+### Frontend
 ```bash
-cd budget-app/frontend
+cd frontend
 npm install
 npm run dev
 ```
 
-Le frontend tourne sur **http://localhost:5173**
+→ http://localhost:5173 — Login : **demo@budget.fr / Demo1234!**
 
----
+## Déploiement VPS
 
-## 🔑 Compte de démonstration
+```bash
+ssh root@72.62.21.162
+bash <(curl -s https://raw.githubusercontent.com/joshkabs95/kazi_bula_fund/main/deploy/deploy.sh)
+```
 
-Après `python manage.py seed` :
+→ http://72.62.21.162
 
-| Champ | Valeur |
-|-------|--------|
-| Email | `demo@budget.fr` |
-| Mot de passe | `Demo1234!` |
-
----
-
-## 📡 API Endpoints
-
-| Méthode | URL | Description |
-|---------|-----|-------------|
-| POST | `/api/auth/login/` | Connexion JWT |
-| POST | `/api/auth/refresh/` | Refresh token |
-| POST | `/api/auth/register/` | Inscription |
-| GET | `/api/auth/me/` | Profil utilisateur |
-| GET/POST | `/api/categories/` | Liste/création catégories |
-| GET/POST | `/api/transactions/` | Liste/création transactions |
-| GET | `/api/transactions/stats/` | Statistiques agrégées |
-| PUT/DELETE | `/api/transactions/:id/` | Modification/suppression |
-| POST | `/api/documents/upload/` | Upload PDF ou CSV |
-| GET | `/api/documents/:id/preview/` | Preview transactions parsées |
-| POST | `/api/documents/:id/import/` | Confirmer l'import |
-
----
-
-## 🎨 Fonctionnalités
-
-- **Dashboard** : KPIs (revenus/dépenses/solde), graphiques Recharts (camembert + barres mensuelles)
-- **Transactions** : CRUD complet, filtres par catégorie/date/type
-- **Catégories** : Grille avec barres de progression, % du total
-- **Import bancaire** : Drag & drop PDF/CSV, catégorisation automatique par mots-clés, déduplication par hash
-- **Auth JWT** : Access token 60min, refresh automatique, blacklist à la déconnexion
-
----
-
-## 🤖 Catégorisation automatique
-
-Les transactions importées sont catégorisées par analyse du libellé :
-
-| Catégorie | Mots-clés détectés |
-|-----------|-------------------|
-| Alimentation | carrefour, auchan, mcdo, uber eats... |
-| Logement | loyer, edf, charges, syndic... |
-| Transport | sncf, ratp, uber, essence... |
-| Loisirs | netflix, spotify, steam... |
-| Services | sfr, orange, mutuelle... |
-| Revenus | salaire, virement, caf... |
-
----
-
-## 🔧 Variables d'environnement
-
-Copier `.env.example` → `.env` dans le dossier `backend/` :
-
-```env
-SECRET_KEY=votre-clé-secrète
-DEBUG=True
-ALLOWED_HOSTS=localhost,127.0.0.1
-CORS_ALLOWED_ORIGINS=http://localhost:5173
+## API Endpoints
+```
+POST   /api/auth/register/
+POST   /api/auth/login/
+POST   /api/auth/refresh/
+GET    /api/categories/
+GET    /api/transactions/          ?month=&category=&type=&search=
+GET    /api/transactions/stats/
+GET    /api/transactions/insights/
+GET    /api/goals/
+POST   /api/goals/:id/contribute/
+POST   /api/documents/upload/
+POST   /api/documents/:id/import/
 ```

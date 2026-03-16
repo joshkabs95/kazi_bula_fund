@@ -16,6 +16,7 @@ class Category(models.Model):
     color = models.CharField(max_length=7, default='#6366f1')
     type = models.CharField(max_length=10, choices=CATEGORY_TYPES, default='expense')
     is_default = models.BooleanField(default=False)
+    budget_limit = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
 
     class Meta:
         verbose_name = 'Catégorie'

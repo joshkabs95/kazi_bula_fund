@@ -1,0 +1,66 @@
+.page { padding: 28px; flex: 1; overflow-y: auto; }
+.header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+.title { font-family: 'Playfair Display', serif; font-size: 26px; }
+.sub { color: var(--text-secondary); font-size: 13px; margin-top: 4px; }
+.loading { color: var(--text-secondary); padding: 40px; text-align: center; }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform 0.2s;
+}
+.card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.35); }
+
+.cardTop { display: flex; justify-content: space-between; align-items: center; }
+.catInfo { display: flex; align-items: center; gap: 10px; }
+.catIcon { width: 38px; height: 38px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
+.catName { font-size: 14px; font-weight: 700; }
+.catCount { font-size: 10px; color: var(--text-muted); margin-top: 1px; }
+
+.amountGroup { text-align: right; }
+.spent { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; }
+.limitLabel { font-size: 11px; color: var(--text-muted); }
+
+.progressBg { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.progressFill { height: 100%; border-radius: 3px; transition: width 0.7s ease; }
+
+.pctRow { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.pctSub { color: var(--text-muted); }
+
+.alert { padding: 8px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; }
+.alert.danger { background: rgba(239,68,68,.12); color: #ef4444; }
+.alert.warning { background: rgba(249,115,22,.12); color: #f97316; }
+
+.editRow { display: flex; gap: 8px; align-items: center; }
+.limitInput {
+  flex: 1;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: 'Manrope', sans-serif;
+}
+.limitInput:focus { border-color: var(--accent-gold); outline: none; }
+
+.editBtn {
+  background: none;
+  border: 1px dashed var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-family: 'Manrope', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: 0.15s;
+}
+.editBtn:hover { border-color: var(--accent-gold); color: var(--accent-gold); }

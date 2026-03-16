@@ -9,4 +9,5 @@ urlpatterns = [
     path('api/categories/', include('apps.categories.urls')),
     path('api/transactions/', include('apps.transactions.urls')),
     path('api/documents/', include('apps.documents.urls')),
+    path('api/goals/', include('apps.goals.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

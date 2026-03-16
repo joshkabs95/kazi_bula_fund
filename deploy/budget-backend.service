@@ -1,0 +1,22 @@
+[Unit]
+Description=Budget Master — Django Gunicorn
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/budget-app/backend
+Environment="DJANGO_SETTINGS_MODULE=config.settings_prod"
+EnvironmentFile=/var/www/budget-app/backend/.env
+ExecStart=/var/www/budget-app/venv/bin/gunicorn \
+    --workers 3 \
+    --bind 127.0.0.1:8000 \
+    --timeout 60 \
+    --access-logfile /var/log/budget-backend-access.log \
+    --error-logfile /var/log/budget-backend-error.log \
+    config.wsgi:application
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
