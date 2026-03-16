@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Budget Manager — Aperçu</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f; --surface: #12121a; --card: #1a1a24;
+    --border: #2a2a3a; --gold: #c9a84c; --gold2: #e8c872;
+    --green: #22c55e; --red: #ef4444; --purple: #a855f7;
+    --blue: #3b82f6; --orange: #f97316;
+    --t1: #f0f0f5; --t2: #8888aa; --t3: #555575;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--t1); font-family: 'Manrope', sans-serif; font-size: 13px; min-height: 100vh; }
+  h1,h2,h3 { font-family: 'Playfair Display', serif; }
+
+  /* NAV TABS */
+  .nav-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); background: var(--surface); padding: 0 24px; position: sticky; top: 0; z-index: 50; }
+  .tab { padding: 14px 20px; cursor: pointer; color: var(--t2); font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; transition: all .2s; white-space: nowrap; }
+  .tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .tab:hover:not(.active) { color: var(--t1); }
+
+  /* SCREENS */
+  .screen { display: none; padding: 0; }
+  .screen.active { display: flex; min-height: calc(100vh - 49px); }
+
+  /* ── DASHBOARD ── */
+  .sidebar {
+    width: 220px; background: var(--surface); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column; padding: 20px 14px; flex-shrink: 0;
+  }
+  .logo { font-family:'Playfair Display',serif; font-size:18px; color:var(--gold); padding:6px 10px; margin-bottom:24px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; color:var(--t2); font-size:13px; font-weight:500; cursor:pointer; transition:.15s; margin-bottom:2px; }
+  .nav-item:hover { background:rgba(255,255,255,.04); color:var(--t1); }
+  .nav-item.active { background:rgba(201,168,76,.1); color:var(--gold); }
+  .sidebar-footer { margin-top:auto; border-top:1px solid var(--border); padding-top:14px; }
+  .avatar-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .avatar { width:34px; height:34px; border-radius:50%; background:var(--gold); color:#0a0a0f; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; flex-shrink:0; }
+  .uname { font-size:12px; font-weight:700; color:var(--t1); }
+  .uemail { font-size:10px; color:var(--t3); }
+  .logout-btn { width:100%; background:none; border:1px solid var(--border); border-radius:7px; padding:7px; color:var(--t2); font-size:11px; cursor:pointer; font-family:inherit; transition:.15s; }
+  .logout-btn:hover { border-color:var(--red); color:var(--red); }
+
+  .main { flex:1; padding:28px; overflow-y:auto; }
+  .page-header { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:24px; }
+  .page-title { font-size:26px; color:var(--t1); }
+  .page-sub { font-size:12px; color:var(--t3); margin-top:4px; }
+  .header-btns { display:flex; gap:10px; }
+  .btn { display:inline-flex; align-items:center; gap:6px; padding:9px 18px; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; border:none; font-family:inherit; transition:.2s; }
+  .btn-primary { background:var(--gold); color:#0a0a0f; }
+  .btn-primary:hover { background:var(--gold2); }
+  .btn-outline { background:transparent; border:1px solid var(--border); color:var(--t1); }
+  .btn-outline:hover { border-color:var(--gold); color:var(--gold); }
+
+  /* KPIs */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:22px; }
+  .kpi { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; transition:.2s; animation:fadeUp .4s ease both; }
+  .kpi:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,.4); }
+  .kpi.income { border-top:2px solid var(--green); }
+  .kpi.expense { border-top:2px solid var(--red); }
+  .kpi.neutral { border-top:2px solid var(--gold); }
+  .kpi-label { display:flex; align-items:center; gap:8px; color:var(--t2); font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.07em; margin-bottom:10px; }
+  .kpi-amount { font-family:'Playfair Display',serif; font-size:28px; font-weight:700; }
+  .kpi-amount.green { color:var(--green); }
+  .kpi-amount.red { color:var(--red); }
+  .kpi-amount.gold { color:var(--gold); }
+  .kpi-sub { font-size:11px; color:var(--t3); margin-top:4px; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+  /* Charts row */
+  .charts-row { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:22px; }
+  .chart-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .chart-title { font-size:14px; font-weight:700; color:var(--t1); margin-bottom:16px; }
+
+  /* Pie chart SVG */
+  .pie-wrap { display:flex; align-items:center; gap:20px; }
+  .pie-legend { display:flex; flex-direction:column; gap:8px; flex:1; }
+  .legend-item { display:flex; align-items:center; gap:8px; font-size:12px; }
+  .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+  .legend-name { color:var(--t2); flex:1; }
+  .legend-val { color:var(--t1); font-weight:600; }
+
+  /* Bar chart */
+  .bar-chart { display:flex; align-items:flex-end; gap:6px; height:140px; padding-top:10px; }
+  .bar-group { display:flex; flex-direction:column; align-items:center; gap:3px; flex:1; }
+  .bars { display:flex; gap:3px; align-items:flex-end; height:110px; }
+  .bar { border-radius:3px 3px 0 0; min-width:10px; }
+  .bar-label { font-size:10px; color:var(--t3); }
+
+  /* Table */
+  .table-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:20px; }
+  .table-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; padding:8px 10px; font-size:10px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border); }
+  td { padding:11px 10px; border-bottom:1px solid rgba(255,255,255,.03); vertical-align:middle; }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:rgba(255,255,255,.02); }
+  .cat-badge { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; }
+  .source-badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:700; }
+  .src-manual { background:rgba(239,68,68,.12); color:var(--red); }
+  .src-import { background:rgba(34,197,94,.12); color:var(--green); }
+  .amt-pos { color:var(--green); font-weight:700; }
+  .amt-neg { color:var(--red); font-weight:700; }
+  .row-actions { display:flex; gap:4px; opacity:0; transition:.15s; }
+  tr:hover .row-actions { opacity:1; }
+  .action-btn { background:none; border:none; cursor:pointer; padding:3px 6px; border-radius:5px; font-size:12px; }
+  .action-btn:hover { background:var(--border); }
+
+  /* ── CATEGORIES ── */
+  .cat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; padding:28px; width:100%; }
+  .cat-card {
+    background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px;
+    transition:.2s; cursor:default; position:relative; overflow:hidden;
+  }
+  .cat-card::before { content:''; position:absolute; inset:0; background:linear-gradient(135deg,rgba(255,255,255,.025) 0%,transparent 60%); }
+  .cat-card:hover { transform:scale(1.025); box-shadow:0 8px 28px rgba(0,0,0,.35); }
+  .cc-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .cc-icon { width:38px; height:38px; border-radius:9px; border:1px solid; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .cc-name { font-size:13px; font-weight:700; color:var(--t1); }
+  .cc-count { font-size:10px; color:var(--t3); }
+  .cc-amount { font-family:'Playfair Display',serif; font-size:18px; font-weight:700; margin-left:auto; flex-shrink:0; }
+  .cc-bar { height:4px; background:var(--border); border-radius:2px; overflow:hidden; margin-bottom:5px; }
+  .cc-fill { height:100%; border-radius:2px; }
+  .cc-pct { font-size:10px; color:var(--t3); }
+
+  /* ── TRANSACTION FORM MODAL ── */
+  .modal-screen { flex-direction:column; align-items:center; justify-content:center; background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,.06) 0%, transparent 70%), var(--bg); }
+  .modal-demo { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:28px; width:460px; animation:fadeUp .3s ease; }
+  .modal-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+  .modal-hdr h2 { font-size:19px; }
+  .modal-close { background:none; border:none; color:var(--t2); font-size:17px; cursor:pointer; padding:4px 8px; border-radius:6px; }
+  .modal-close:hover { background:var(--border); }
+  .mform { display:flex; flex-direction:column; gap:15px; }
+  .mfield { display:flex; flex-direction:column; gap:5px; }
+  .mfield label { font-size:10px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:.07em; }
+  .mfield input, .mfield select {
+    background:var(--card); border:1px solid var(--border); border-radius:8px;
+    padding:10px 13px; color:var(--t1); font-size:13px; font-family:inherit;
+  }
+  .mfield input:focus, .mfield select:focus { border-color:var(--gold); outline:none; }
+  .mfield select option { background:var(--card); }
+  .mfield small { font-size:10px; color:var(--t3); }
+  .mactions { display:flex; gap:10px; justify-content:flex-end; margin-top:6px; }
+  .mrow { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+  /* ── IMPORT MODAL ── */
+  .import-modal { background:var(--surface); border:1px solid var(--border); border-radius:18px; width:820px; max-height:88vh; display:flex; flex-direction:column; padding:28px; animation:fadeUp .3s ease; overflow:hidden; }
+  .dropzone { border:2px dashed var(--border); border-radius:10px; padding:50px 40px; text-align:center; cursor:pointer; transition:.2s; }
+  .dropzone:hover { border-color:var(--gold); background:rgba(201,168,76,.04); }
+  .dz-icon { font-size:44px; margin-bottom:12px; }
+  .dz-text { font-size:15px; font-weight:600; margin-bottom:4px; }
+  .dz-sub { font-size:12px; color:var(--t2); }
+  .preview-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+  .check-all { display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; }
+  .check-all input { accent-color:var(--gold); cursor:pointer; width:14px; height:14px; }
+  .total-sel { font-size:15px; font-weight:700; }
+  .imp-table-wrap { border:1px solid var(--border); border-radius:8px; overflow-y:auto; max-height:280px; flex:1; }
+  .imp-table { width:100%; border-collapse:collapse; font-size:12px; }
+  .imp-table th { background:var(--card); padding:8px 10px; text-align:left; font-size:10px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:.05em; position:sticky; top:0; }
+  .imp-table td { padding:9px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
+  .imp-table tr:last-child td { border-bottom:none; }
+  .imp-table tr:hover td { background:rgba(255,255,255,.02); }
+  .imp-cat-sel { background:var(--card); border:1px solid var(--border); border-radius:6px; padding:3px 7px; color:var(--t1); font-size:11px; max-width:140px; font-family:inherit; }
+  .imp-actions { display:flex; gap:10px; justify-content:flex-end; margin-top:14px; }
+
+  /* ── AUTH ── */
+  .auth-screen { flex-direction:column; align-items:center; justify-content:center; background: radial-gradient(ellipse 80% 60% at 20% -10%, rgba(201,168,76,.07) 0%, transparent 60%), var(--bg); }
+  .auth-card { background:var(--surface); border:1px solid var(--border); border-radius:18px; padding:38px 34px; width:400px; display:flex; flex-direction:column; gap:18px; animation:fadeUp .4s ease; }
+  .auth-logo { font-size:34px; text-align:center; }
+  .auth-title { font-size:24px; text-align:center; }
+  .auth-sub { font-size:13px; text-align:center; color:var(--t2); margin-top:-10px; }
+  .auth-form { display:flex; flex-direction:column; gap:14px; }
+  .auth-field { display:flex; flex-direction:column; gap:5px; }
+  .auth-field label { font-size:10px; font-weight:700; color:var(--t2); text-transform:uppercase; letter-spacing:.07em; }
+  .auth-field input { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:10px 13px; color:var(--t1); font-size:13px; font-family:inherit; }
+  .auth-switch { font-size:12px; text-align:center; color:var(--t2); }
+  .auth-switch a { color:var(--gold); }
+  .auth-demo { background:rgba(201,168,76,.08); border:1px solid rgba(201,168,76,.2); border-radius:8px; padding:9px 13px; font-size:11px; color:var(--t2); text-align:center; }
+  .auth-demo span { color:var(--gold); font-weight:700; }
+
+  /* Animated input focus rings */
+  input:focus { border-color:var(--gold) !important; outline:none; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:var(--surface); }
+  ::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV TABS -->
+<div class="nav-tabs">
+  <div class="tab active" onclick="show('dashboard')">📊 Dashboard</div>
+  <div class="tab" onclick="show('categories')">🏷️ Catégories</div>
+  <div class="tab" onclick="show('form')">➕ Nouvelle transaction</div>
+  <div class="tab" onclick="show('import')">📤 Import bancaire</div>
+  <div class="tab" onclick="show('login')">🔐 Login</div>
+  <div class="tab" onclick="show('register')">📝 Register</div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 1 — DASHBOARD
+══════════════════════════════════════════════ -->
+<div class="screen active" id="screen-dashboard">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="logo">💰 Budget</div>
+    <nav>
+      <div class="nav-item active">📊 <span>Tableau de bord</span></div>
+      <div class="nav-item">🏷️ <span>Catégories</span></div>
+      <div class="nav-item">💸 <span>Transactions</span></div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="avatar-row">
+        <div class="avatar">D</div>
+        <div>
+          <div class="uname">Demo User</div>
+          <div class="uemail">demo@budget.fr</div>
+        </div>
+      </div>
+      <button class="logout-btn">Déconnexion</button>
+    </div>
+  </aside>
+
+  <!-- Main content -->
+  <main class="main">
+    <div class="page-header">
+      <div>
+        <h1 class="page-title">Tableau de bord</h1>
+        <p class="page-sub">lundi 16 mars 2026</p>
+      </div>
+      <div class="header-btns">
+        <button class="btn btn-outline">📤 Relevé bancaire</button>
+        <button class="btn btn-primary">+ Ajouter</button>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi income" style="animation-delay:.05s">
+        <div class="kpi-label"><span>📈</span> Revenus</div>
+        <div class="kpi-amount green">3 300,00 €</div>
+        <div class="kpi-sub">Ce mois</div>
+      </div>
+      <div class="kpi expense" style="animation-delay:.15s">
+        <div class="kpi-label"><span>📉</span> Dépenses</div>
+        <div class="kpi-amount red">1 847,52 €</div>
+        <div class="kpi-sub">Ce mois</div>
+      </div>
+      <div class="kpi neutral" style="animation-delay:.25s">
+        <div class="kpi-label"><span>💳</span> Solde</div>
+        <div class="kpi-amount gold">1 452,48 €</div>
+        <div class="kpi-sub">Balance totale</div>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="charts-row">
+      <!-- Pie -->
+      <div class="chart-card">
+        <div class="chart-title">Répartition par catégorie</div>
+        <div class="pie-wrap">
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <!-- Pie arcs approximated as circles with stroke-dasharray -->
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#f97316" stroke-width="22"
+              stroke-dasharray="82 232" stroke-dashoffset="0" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#6366f1" stroke-width="22"
+              stroke-dasharray="64 232" stroke-dashoffset="-82" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#3b82f6" stroke-width="22"
+              stroke-dasharray="48 232" stroke-dashoffset="-146" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#a855f7" stroke-width="22"
+              stroke-dasharray="30 232" stroke-dashoffset="-194" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="50" fill="none" stroke="#ec4899" stroke-width="22"
+              stroke-dasharray="15 232" stroke-dashoffset="-224" transform="rotate(-90 70 70)"/>
+            <circle cx="70" cy="70" r="34" fill="#1a1a24"/>
+            <text x="70" y="66" text-anchor="middle" fill="#f0f0f5" font-family="Playfair Display,serif" font-size="13" font-weight="700">1 848 €</text>
+            <text x="70" y="79" text-anchor="middle" fill="#8888aa" font-size="9">dépenses</text>
+          </svg>
+          <div class="pie-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div><span class="legend-name">Alimentation</span><span class="legend-val">615 €</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div><span class="legend-name">Logement</span><span class="legend-val">483 €</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div><span class="legend-name">Transport</span><span class="legend-val">363 €</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div><span class="legend-name">Loisirs</span><span class="legend-val">225 €</span></div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ec4899"></div><span class="legend-name">Services</span><span class="legend-val">113 €</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bar chart -->
+      <div class="chart-card">
+        <div class="chart-title">Évolution mensuelle</div>
+        <div class="bar-chart">
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:70px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:52px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Oct</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:75px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:48px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Nov</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:65px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:60px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Déc</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:72px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:44px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Jan</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:80px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:50px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Fév</div>
+          </div>
+          <div class="bar-group">
+            <div class="bars">
+              <div class="bar" style="width:12px;height:90px;background:var(--green)"></div>
+              <div class="bar" style="width:12px;height:58px;background:var(--red)"></div>
+            </div>
+            <div class="bar-label">Mar</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:16px;margin-top:10px;">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;background:var(--green);border-radius:2px"></div>Revenus</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--t2)"><div style="width:10px;height:10px;background:var(--red);border-radius:2px"></div>Dépenses</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Transactions table -->
+    <div class="table-card">
+      <div class="table-header">
+        <div class="chart-title" style="margin:0">10 dernières transactions</div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th><th>Libellé</th><th>Catégorie</th><th>Source</th><th style="text-align:right">Montant</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--t2)">14/03/2026</td>
+            <td>Salaire mensuel</td>
+            <td><span class="cat-badge" style="background:rgba(34,197,94,.15);color:var(--green)">💰 Revenus</span></td>
+            <td><span class="source-badge src-manual">manual</span></td>
+            <td style="text-align:right"><span class="amt-pos">+2 900,00 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">13/03/2026</td>
+            <td>Carrefour Market</td>
+            <td><span class="cat-badge" style="background:rgba(249,115,22,.15);color:var(--orange)">🛒 Alimentation</span></td>
+            <td><span class="source-badge src-import">import</span></td>
+            <td style="text-align:right"><span class="amt-neg">-62,30 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">12/03/2026</td>
+            <td>Loyer mensuel</td>
+            <td><span class="cat-badge" style="background:rgba(99,102,241,.15);color:#6366f1">🏠 Logement</span></td>
+            <td><span class="source-badge src-manual">manual</span></td>
+            <td style="text-align:right"><span class="amt-neg">-850,00 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">11/03/2026</td>
+            <td>RATP Navigo</td>
+            <td><span class="cat-badge" style="background:rgba(59,130,246,.15);color:var(--blue)">🚗 Transport</span></td>
+            <td><span class="source-badge src-import">import</span></td>
+            <td style="text-align:right"><span class="amt-neg">-86,40 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">10/03/2026</td>
+            <td>Netflix</td>
+            <td><span class="cat-badge" style="background:rgba(168,85,247,.15);color:var(--purple)">🎮 Loisirs</span></td>
+            <td><span class="source-badge src-manual">manual</span></td>
+            <td style="text-align:right"><span class="amt-neg">-17,99 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">09/03/2026</td>
+            <td>Uber Eats</td>
+            <td><span class="cat-badge" style="background:rgba(249,115,22,.15);color:var(--orange)">🛒 Alimentation</span></td>
+            <td><span class="source-badge src-import">import</span></td>
+            <td style="text-align:right"><span class="amt-neg">-24,50 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">08/03/2026</td>
+            <td>Pharmacie</td>
+            <td><span class="cat-badge" style="background:rgba(16,185,129,.15);color:#10b981">💊 Santé</span></td>
+            <td><span class="source-badge src-manual">manual</span></td>
+            <td style="text-align:right"><span class="amt-neg">-28,90 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+          <tr>
+            <td style="color:var(--t2)">07/03/2026</td>
+            <td>Spotify</td>
+            <td><span class="cat-badge" style="background:rgba(168,85,247,.15);color:var(--purple)">🎮 Loisirs</span></td>
+            <td><span class="source-badge src-manual">manual</span></td>
+            <td style="text-align:right"><span class="amt-neg">-9,99 €</span></td>
+            <td><div class="row-actions"><button class="action-btn">✏️</button><button class="action-btn">🗑️</button></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 2 — CATEGORIES
+══════════════════════════════════════════════ -->
+<div class="screen" id="screen-categories">
+  <!-- KPIs strip -->
+  <div style="position:absolute;top:49px;left:0;right:0;background:var(--surface);border-bottom:1px solid var(--border);padding:14px 28px;display:flex;gap:14px;align-items:center;z-index:10">
+    <div style="font-family:'Playfair Display',serif;font-size:22px;flex:1">Catégories</div>
+    <div class="kpi" style="padding:12px 20px;animation:none;flex-direction:row;align-items:center;gap:16px;border-top:2px solid var(--green)">
+      <span style="font-size:11px;color:var(--t2)">REVENUS</span>
+      <span class="kpi-amount green" style="font-size:18px">3 300 €</span>
+    </div>
+    <div class="kpi" style="padding:12px 20px;animation:none;flex-direction:row;align-items:center;gap:16px;border-top:2px solid var(--red)">
+      <span style="font-size:11px;color:var(--t2)">DÉPENSES</span>
+      <span class="kpi-amount red" style="font-size:18px">1 848 €</span>
+    </div>
+    <div class="kpi" style="padding:12px 20px;animation:none;flex-direction:row;align-items:center;gap:16px;border-top:2px solid var(--gold)">
+      <span style="font-size:11px;color:var(--t2)">SOLDE</span>
+      <span class="kpi-amount gold" style="font-size:18px">1 452 €</span>
+    </div>
+  </div>
+
+  <div class="cat-grid" style="padding-top:96px">
+    <!-- Alimentation -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(249,115,22,.15);border-color:rgba(249,115,22,.3)">🛒</div>
+        <div><div class="cc-name">Alimentation</div><div class="cc-count">14 transactions</div></div>
+        <div class="cc-amount" style="color:#f97316">615 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:33%;background:#f97316"></div></div>
+      <div class="cc-pct">33.3% des dépenses</div>
+    </div>
+    <!-- Logement -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(99,102,241,.15);border-color:rgba(99,102,241,.3)">🏠</div>
+        <div><div class="cc-name">Logement</div><div class="cc-count">3 transactions</div></div>
+        <div class="cc-amount" style="color:#6366f1">483 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:26%;background:#6366f1"></div></div>
+      <div class="cc-pct">26.1% des dépenses</div>
+    </div>
+    <!-- Transport -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.3)">🚗</div>
+        <div><div class="cc-name">Transport</div><div class="cc-count">8 transactions</div></div>
+        <div class="cc-amount" style="color:#3b82f6">363 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:20%;background:#3b82f6"></div></div>
+      <div class="cc-pct">19.6% des dépenses</div>
+    </div>
+    <!-- Loisirs -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(168,85,247,.15);border-color:rgba(168,85,247,.3)">🎮</div>
+        <div><div class="cc-name">Loisirs</div><div class="cc-count">6 transactions</div></div>
+        <div class="cc-amount" style="color:#a855f7">225 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:12%;background:#a855f7"></div></div>
+      <div class="cc-pct">12.2% des dépenses</div>
+    </div>
+    <!-- Services -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(236,72,153,.15);border-color:rgba(236,72,153,.3)">📱</div>
+        <div><div class="cc-name">Services</div><div class="cc-count">4 transactions</div></div>
+        <div class="cc-amount" style="color:#ec4899">113 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:6%;background:#ec4899"></div></div>
+      <div class="cc-pct">6.1% des dépenses</div>
+    </div>
+    <!-- Santé -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(16,185,129,.15);border-color:rgba(16,185,129,.3)">💊</div>
+        <div><div class="cc-name">Santé</div><div class="cc-count">3 transactions</div></div>
+        <div class="cc-amount" style="color:#10b981">72 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:4%;background:#10b981"></div></div>
+      <div class="cc-pct">3.9% des dépenses</div>
+    </div>
+    <!-- Shopping -->
+    <div class="cat-card">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(245,158,11,.15);border-color:rgba(245,158,11,.3)">👗</div>
+        <div><div class="cc-name">Shopping</div><div class="cc-count">2 transactions</div></div>
+        <div class="cc-amount" style="color:#f59e0b">105 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:5.7%;background:#f59e0b"></div></div>
+      <div class="cc-pct">5.7% des dépenses</div>
+    </div>
+    <!-- Revenus -->
+    <div class="cat-card" style="border-top:2px solid var(--green)">
+      <div class="cc-header">
+        <div class="cc-icon" style="background:rgba(34,197,94,.15);border-color:rgba(34,197,94,.3)">💰</div>
+        <div><div class="cc-name">Revenus</div><div class="cc-count">2 transactions</div></div>
+        <div class="cc-amount" style="color:var(--green)">3 300 €</div>
+      </div>
+      <div class="cc-bar"><div class="cc-fill" style="width:100%;background:var(--green)"></div></div>
+      <div class="cc-pct">Total revenus du mois</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 3 — TRANSACTION FORM
+══════════════════════════════════════════════ -->
+<div class="screen modal-screen" id="screen-form">
+  <div class="modal-demo">
+    <div class="modal-hdr">
+      <h2>Nouvelle transaction</h2>
+      <button class="modal-close">✕</button>
+    </div>
+    <div class="mform">
+      <div class="mfield">
+        <label>Montant (€) *</label>
+        <input type="number" placeholder="ex: -45.50 ou 2800" value="-62.30"/>
+        <small>Négatif = dépense &nbsp;·&nbsp; Positif = revenu</small>
+      </div>
+      <div class="mfield">
+        <label>Libellé *</label>
+        <input type="text" value="Carrefour Market"/>
+      </div>
+      <div class="mrow">
+        <div class="mfield">
+          <label>Catégorie</label>
+          <select>
+            <option>-- Sans catégorie --</option>
+            <option selected>🛒 Alimentation</option>
+            <option>🏠 Logement</option>
+            <option>🚗 Transport</option>
+            <option>🎮 Loisirs</option>
+            <option>📱 Services</option>
+            <option>💊 Santé</option>
+            <option>💰 Revenus</option>
+          </select>
+        </div>
+        <div class="mfield">
+          <label>Date *</label>
+          <input type="date" value="2026-03-13"/>
+        </div>
+      </div>
+      <div class="mactions">
+        <button class="btn btn-outline">Annuler</button>
+        <button class="btn btn-primary">Ajouter</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 4 — IMPORT MODAL
+══════════════════════════════════════════════ -->
+<div class="screen modal-screen" id="screen-import">
+  <div class="import-modal">
+    <div class="modal-hdr">
+      <h2>Import relevé bancaire</h2>
+      <button class="modal-close">✕</button>
+    </div>
+
+    <div class="preview-hdr">
+      <label class="check-all">
+        <input type="checkbox" checked/> Tout sélectionner (8 transactions)
+      </label>
+      <span class="total-sel amt-neg">Total : -1 162,58 €</span>
+    </div>
+
+    <div class="imp-table-wrap">
+      <table class="imp-table">
+        <thead>
+          <tr>
+            <th></th><th>Date</th><th>Libellé</th><th>Montant</th><th>Catégorie</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-14</td><td>CARREFOUR MARKET</td>
+            <td class="amt-neg">-62,30 €</td>
+            <td><select class="imp-cat-sel"><option>🛒 Alimentation</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-12</td><td>LOYER MARS 2026</td>
+            <td class="amt-neg">-850,00 €</td>
+            <td><select class="imp-cat-sel"><option>🏠 Logement</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-11</td><td>RATP NAVIGO MARS</td>
+            <td class="amt-neg">-86,40 €</td>
+            <td><select class="imp-cat-sel"><option>🚗 Transport</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-10</td><td>NETFLIX.COM</td>
+            <td class="amt-neg">-17,99 €</td>
+            <td><select class="imp-cat-sel"><option>🎮 Loisirs</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-09</td><td>UBER EATS PARIS</td>
+            <td class="amt-neg">-24,50 €</td>
+            <td><select class="imp-cat-sel"><option>🛒 Alimentation</option></select></td>
+          </tr>
+          <tr style="opacity:.4">
+            <td><input type="checkbox" disabled style="accent-color:var(--gold)"/></td>
+            <td>2026-03-07</td><td>SPOTIFY AB ⚠️ déjà importé</td>
+            <td class="amt-neg">-9,99 €</td>
+            <td><select class="imp-cat-sel" disabled><option>🎮 Loisirs</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-05</td><td>EDF FACTURE ELECTRICITE</td>
+            <td class="amt-neg">-65,00 €</td>
+            <td><select class="imp-cat-sel"><option>🏠 Logement</option></select></td>
+          </tr>
+          <tr>
+            <td><input type="checkbox" checked style="accent-color:var(--gold)"/></td>
+            <td>2026-03-01</td><td>VIR SALAIRE ENTREPRISE SA</td>
+            <td class="amt-pos">+2 900,00 €</td>
+            <td><select class="imp-cat-sel"><option>💰 Revenus</option></select></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="imp-actions">
+      <button class="btn btn-outline">Annuler</button>
+      <button class="btn btn-primary">📥 Importer 7 transaction(s)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 5 — LOGIN
+══════════════════════════════════════════════ -->
+<div class="screen auth-screen" id="screen-login">
+  <div class="auth-card">
+    <div class="auth-logo">💰</div>
+    <h1 class="auth-title">Budget Manager</h1>
+    <p class="auth-sub">Connectez-vous à votre espace</p>
+    <div class="auth-form">
+      <div class="auth-field">
+        <label>Email</label>
+        <input type="email" value="demo@budget.fr"/>
+      </div>
+      <div class="auth-field">
+        <label>Mot de passe</label>
+        <input type="password" value="Demo1234!"/>
+      </div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center">Se connecter</button>
+    </div>
+    <p class="auth-switch">Pas encore de compte ? <a href="#">Créer un compte</a></p>
+    <div class="auth-demo"><span>Demo :</span> demo@budget.fr / Demo1234!</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     SCREEN 6 — REGISTER
+══════════════════════════════════════════════ -->
+<div class="screen auth-screen" id="screen-register">
+  <div class="auth-card" style="max-width:440px">
+    <div class="auth-logo">💰</div>
+    <h1 class="auth-title">Créer un compte</h1>
+    <p class="auth-sub">Commencez à gérer votre budget</p>
+    <div class="auth-form">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="auth-field"><label>Prénom</label><input type="text" placeholder="Jean"/></div>
+        <div class="auth-field"><label>Nom</label><input type="text" placeholder="Dupont"/></div>
+      </div>
+      <div class="auth-field"><label>Email</label><input type="email" placeholder="vous@exemple.fr"/></div>
+      <div class="auth-field"><label>Mot de passe</label><input type="password" placeholder="••••••••"/></div>
+      <div class="auth-field"><label>Confirmer le mot de passe</label><input type="password" placeholder="••••••••"/></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center">Créer mon compte</button>
+    </div>
+    <p class="auth-switch">Déjà un compte ? <a href="#">Se connecter</a></p>
+  </div>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>
